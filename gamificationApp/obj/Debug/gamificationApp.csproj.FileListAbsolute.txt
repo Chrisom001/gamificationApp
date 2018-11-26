@@ -1,0 +1,16 @@
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Debug\gamificationApp.exe.config
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Debug\gamificationApp.exe
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Debug\gamificationApp.pdb
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.csprojAssemblyReference.cache
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.Form1.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.gameScreen.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.MainMenu.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.Properties.Resources.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.csproj.GenerateResource.cache
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.csproj.CoreCompileInputs.cache
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.exe
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.pdb
+C:\Users\Chris\source\repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Debug\gamification.mdf
+C:\Users\Chris\source\repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Debug\gamification_log.ldf
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.scoreboard.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Debug\gamificationApp.admin.resources
