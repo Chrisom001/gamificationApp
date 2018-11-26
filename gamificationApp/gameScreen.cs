@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace gamificationApp
 {
     public partial class GameScreen : Form
     {
-        //This holds the current DB Connection String
-        private static String dbConnection = ImportantCode.dbConnection;
-
         //This holds the current version number
         private String version = ImportantCode.version;
 
@@ -17,20 +13,12 @@ namespace gamificationApp
 
         //This will hold all the questions held in the database
         String[,] Quiz;
-
-        //This will hold the solutions for the current question
-        int[] Solution;
-
+        
         //This will keep track of how much time is remaining
         int timeLeft;
 
         //This will track the current question number
         int questionNumber = 0;
-
-        //This is the SQL Connection String
-        static SqlConnection con = new SqlConnection(@"" + dbConnection + "");
-
-
 
         public GameScreen()
         {
@@ -49,89 +37,21 @@ namespace gamificationApp
 
         private void importantStartup()
         {
+            Questions test = new Questions();
 
             //This checks how many questions there are
-            numberOfQuestions = questionCount();
+            numberOfQuestions = Questions.questionCount();
             //This initialises the 2D Array for the Questions
-            Quiz = new String[numberOfQuestions, 4];
-            //This initialises the Array for the solutions
-            Solution = new int[4];
-            //Takes all questions and Inputs them into the Array
-            getQuestions();
+            Quiz = new String[numberOfQuestions, 8];
+            //This fills the 2D Array with the questions recieved from the Questions class.
+            Quiz = Questions.getQuestions(numberOfQuestions);
             //Fills in the first question
             fillQuestion();
 
             labelVersion.Text = ImportantCode.version;
         }
 
-        private void getQuestions()
-        {
-            //SQL Query to get all questions from the database
-            String query = "SELECT * FROM dbo.questions";
-
-            con.Open();
-            using (var cmd = new SqlCommand(query, con))
-            {
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    int i = 0;
-                    while (reader.Read())
-                    {
-                            Quiz[i, 0] = reader["questionID"].ToString();
-                            Quiz[i, 1] = reader["questionContent"].ToString();
-                            Quiz[i, 2] = reader["questionAnswer1"].ToString();
-                            Quiz[i, 3] = reader["questionAnswer2"].ToString();
-                        i++;
-                    }
-                    reader.Close();
-                }
-            }
-            con.Close();
-        }
-
-        private void getSolution()
-        {
-            //SQL Query to get solutions based on question number
-            String query = "Select * FROM dbo.solutions WHERE questionID = " + Quiz[questionNumber, 0] + "";
-            con.Open();
-            using (var cmd = new SqlCommand(query, con))
-            {
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                       Solution[0] = Int32.Parse(reader["solution1Rep"].ToString());
-                       Solution[1] = Int32.Parse(reader["solution1Virus"].ToString());
-                       Solution[2] = Int32.Parse(reader["solution2Rep"].ToString());
-                       Solution[3] = Int32.Parse(reader["solution2Virus"].ToString());
-                    }
-                }
-            }
-            con.Close();           
-        }
-
-        private static int questionCount()
-        {
-            int rowCount = 0;
-            String countQuery = "SELECT COUNT(questionID) FROM dbo.questions";
-            SqlDataAdapter dataAdapter = new SqlDataAdapter(countQuery, con);
-            using (SqlCommand cmd = new SqlCommand(countQuery, con))
-            {
-                con.Open();
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        rowCount = Int32.Parse(reader[0].ToString());
-                    }
-                    reader.Close();
-                }
-                con.Close();
-            }
-            return rowCount;
-        }
-
+        //This uses code taken from the Small Scale App done in HND Computing: Software Development Year 2
         private void timer1_Tick_1(object sender, EventArgs e)
         {
             if (timeLeft > 0)
@@ -147,10 +67,13 @@ namespace gamificationApp
             }
         }
 
+        //This takes the values for the first solution and updates the progress bars
         private void solution1Button_Click(object sender, EventArgs e)
         {
-            virusProgress.Increment(Solution[1]);
-            repProgress.Increment(Solution[0]);
+            virusProgress.Increment(Int32.Parse(Quiz[questionNumber, 5])); //This increases or decreases the progress bar based on the virus level set for this solution
+            repProgress.Increment(Int32.Parse(Quiz[questionNumber, 4])); //This increases or decreases the progress bar based on the rep level set for this solution
+            //This checks if the progress bars have reached the values which would cause the program to end, if not it moves to check if there are more questions
+            //If it is, it ends the quiz and checks for the reason.
             if (repProgress.Value > repProgress.Minimum && virusProgress.Value < virusProgress.Maximum)
             {
                 questionCheck();
@@ -160,21 +83,24 @@ namespace gamificationApp
                 endQuiz(endingCheck());
             }
         }
-
+        //This takes the values for the first solution and updates the progress bars
         private void solution2Button_Click(object sender, EventArgs e)
         {
-            virusProgress.Increment(Solution[3]);
-            repProgress.Increment(Solution[2]);
+
+            virusProgress.Increment(Int32.Parse(Quiz[questionNumber, 7])); //This increases or decreases the progress bar based on the virus level set for this solution
+            repProgress.Increment(Int32.Parse(Quiz[questionNumber, 6])); //This increases or decreases the progress bar based on the rep level set for this solution
+            //This checks if the progress bars have reached the values which would cause the program to end, if not it moves to check if there are more questions
+            //If it is, it ends the quiz and checks for the reason.
             if (repProgress.Value > repProgress.Minimum && virusProgress.Value < virusProgress.Maximum)
             {
                 questionCheck();
             } else
             {
-                String endCheck = endingCheck();
-                endQuiz(endCheck);
+                endQuiz(endingCheck());
             }
         }
 
+        //This reloads the page to reset the quiz for the user.
         private void resetQuiz_Click(object sender, EventArgs e)
         {
             GameScreen game = new GameScreen();
@@ -183,17 +109,16 @@ namespace gamificationApp
             this.Dispose();
         }
 
+        //This method fills the question box and each of the solution buttons with the relevant text from the 2D Quiz Array
         private void fillQuestion()
         {
-            quizContent.Text = "This is Question " + Quiz[questionNumber, 0] + " of " + numberOfQuestions + Environment.NewLine + Quiz[questionNumber, 1];
-            //option1Label.Text = Quiz[questionNumber, 2];
-            //option2Label.Text = Quiz[questionNumber, 3];
+            quizContent.Text = "This is Question " + (questionNumber + 1) + " of " + numberOfQuestions + Environment.NewLine + Quiz[questionNumber, 1];
             
             solution1Button.Text = Quiz[questionNumber, 2];
             solution2Button.Text = Quiz[questionNumber, 3];
-            getSolution();
         }
 
+        //This method checks if there are any questions left, if there are it fills the next one otherwise it ends the quiz
         private void questionCheck()
         {
             questionNumber++;
@@ -207,6 +132,7 @@ namespace gamificationApp
             }
         }
 
+        //This method stops the timer to end the quiz and moves to the scoreboard, sending the reason, virus and Rep Values and time remaining.
         private void endQuiz(String endReason)
         {
             timer1.Stop();
@@ -217,6 +143,7 @@ namespace gamificationApp
             this.Dispose();
         }
 
+        //This checks why the game ended if the Virus goes over the Maximum or Rep below the minimum and returns this value
         private String endingCheck()
         {
             String endValue;
@@ -232,6 +159,7 @@ namespace gamificationApp
             return endValue;
         }
 
+        //This takes the user back to the main menu.
         private void buttonMenu_Click(object sender, EventArgs e)
         {
             MainMenu menu = new MainMenu();

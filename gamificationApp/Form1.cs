@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace gamificationApp
 {
+    //This form uses code that was created for my Graded Unit 2 - HND Computing: Software Development Application. 
     public partial class Form1 : Form
     {
-        //This holds the current DB Connection String
-        private static String dbConnection = ImportantCode.dbConnection;
-
         //This holds the current version number
         private String version = ImportantCode.version;
-
-        //This starts the SQL Connection
-        SqlConnection con = new SqlConnection(@"" + dbConnection + "");
 
         public Form1()
         {
@@ -43,35 +37,17 @@ namespace gamificationApp
             }
         }
         
+        //This runs the login check through the User Queries and based on the result either sends the User ot the main menu
+        //or asks them to try logging in again.
         private void loginCheck(string userName, string inputPassword)
         {
-                SqlDataReader sdr;
-                Boolean result = false;
-
-            //This connects to the database to check if the User ID and Password are correct.
-            // If they are, it returns a true result and moves the user to the Main Menu
-            // If not, they are shown an error and are told to try to login again
-
-            
-            con.Open();
-                String query = "SELECT * FROM dbo.users WHERE userName = @userName AND password = @password";
-                using (var cmd = new SqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@userName", userName);
-                    cmd.Parameters.AddWithValue("@password", inputPassword);
-                    sdr = cmd.ExecuteReader();
-                    result = sdr.Read();
-                }
-                con.Close();
-
+            bool result = sqlQueries.UserQueries.loginCheck(userName, inputPassword);
                 if (result == true)
                 {
-
                     userDetails.userName = userName;
                     MainMenu menu1 = new MainMenu();
                     menu1.Show();
                     this.Hide();
-                    con.Close();
                 }
                 else
                 {
@@ -79,15 +55,16 @@ namespace gamificationApp
                 }
         }
 
+        //This is accidental
         private void labelHeader_Click(object sender, EventArgs e)
         {
 
         }
 
+        //This closes the program when clicked by the user.
         private void buttonClose_Click(object sender, EventArgs e)
         {
-            this.Close();
-            this.Dispose();
+            Environment.Exit(0);
         }
     }
 }

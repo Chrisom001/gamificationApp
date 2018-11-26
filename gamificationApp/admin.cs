@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Data.SqlClient;
 
 namespace gamificationApp
 {
     public partial class Admin : Form
     {
-        //This holds the current DB Connection String
-        private static String dbConnection = ImportantCode.dbConnection;
-
-        //This is the SQL Connection String
-        static SqlConnection con = new SqlConnection(@"" + dbConnection + "");
-
         //This stores how many questions are in the database
         static int numberOfQuestions;
 
         //This will hold all the questions held in the database
         String[,] Quiz;
+
+        //This will create an array for the rep/virus values
+        int[] values;
+
+        //This will hold the result of the SQL Queries
+        String result = "";
 
         private String adminChoice = "";
 
@@ -28,65 +27,25 @@ namespace gamificationApp
 
         public void importantStart()
         {
+            Questions test = new Questions();
+
             labelVersion.Text = ImportantCode.version;
             //This checks how many questions there are
-            numberOfQuestions = questionCount();
+            numberOfQuestions = Questions.questionCount();
             //This initialises the 2D Array for the Questions
             Quiz = new String[numberOfQuestions, 8];
+
             //This fills the dropdown
             for (int i = 0; i < numberOfQuestions; i++)
             {
                 comboBoxQuestions.Items.Add(i + 1);
             }
+
+            //This fills the 2D Array with the questions recieved from the Questions class.
+            Quiz = Questions.getQuestions(numberOfQuestions);
         }
 
-        //This method takes the questions in the database as well as the solutions, and puts them into the 2D Array Quiz
-        private void getQuestions()
-        {
-            //SQL Query to get all questions from the database
-
-            String query = "SELECT dbo.questions.questionID, dbo.questions.questionContent, dbo.questions.questionAnswer1, dbo.questions.questionAnswer2, dbo.solutions.solution1Rep, dbo.solutions.solution1Virus, dbo.solutions.solution2Rep, dbo.solutions.solution2Virus FROM dbo.questions INNER JOIN dbo.solutions ON dbo.questions.questionID=dbo.solutions.questionID;";
-            con.Open();
-            using (var cmd = new SqlCommand(query, con))
-            {
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                  {
-                    int i = 0;
-                    while (reader.Read())
-                    {
-                        Quiz[i, 0] = reader["questionID"].ToString();
-                        Quiz[i, 1] = reader["questionContent"].ToString();
-                        Quiz[i, 2] = reader["questionAnswer1"].ToString();
-                        Quiz[i, 3] = reader["questionAnswer2"].ToString();
-                        Quiz[i, 4] = reader["solution1Rep"].ToString();
-                        Quiz[i, 5] = reader["solution1Virus"].ToString();
-                        Quiz[i, 6] = reader["solution2Rep"].ToString();
-                        Quiz[i, 7] = reader["solution2Virus"].ToString();
-                        i++;
-                    }
-                    reader.Close();
-                }
-            }
-            con.Close();
-        }
-
-        private void buttonMenu_Click(object sender, EventArgs e)
-        {
-            MainMenu menu = new MainMenu();
-            menu.Show();
-            this.Hide();
-            this.Dispose();
-        }
-
-        private void buttonSubmit_Click(object sender, EventArgs e)
-        {
-            string question = textBoxQuestion.Text;
-            string solution1 = textBoxAnswer1.Text;
-            string solution2 = textBoxAnswer2.Text;
-
-            textEntryCheck(question, solution1, solution2);
-        }
-
+        //This method checks that the user has entered text into each of the text boxes and alerts them if they haven't done so
         private void textEntryCheck(String question, String solution1, String solution2)
         {
             if (string.IsNullOrWhiteSpace(question))
@@ -104,33 +63,16 @@ namespace gamificationApp
             }
         }
 
-        private static int questionCount()
-        {
-            int rowCount = 0;
-            String countQuery = "SELECT COUNT(questionID) FROM dbo.questions";
-            SqlDataAdapter dataAdapter = new SqlDataAdapter(countQuery, con);
-            using (SqlCommand cmd = new SqlCommand(countQuery, con))
-            {
-                con.Open();
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        rowCount = Int32.Parse(reader[0].ToString());
-                    }
-                    reader.Close();
-                }
-                con.Close();
-            }
-            return rowCount;
-        }
-
+        //This method checks the input given by the user and compares it to a list of swear words to ensure they don't make it into the database
+        //and become visible to children.
         private void profanityCheck(String question, String solution1, String solution2)
         {
             bool swearing = false;
+            //This loops through the list of swear words currently stored
             for(int i = 0; i< ProfanityCheck.profanity.Length; i++)
             {
+                //This checks the question against the current word in the list, If there is swearing it breaks the loop
+                //And changes Swearing to true so this can be highlighted to the user.
                 if (question.ToLower().Contains(ProfanityCheck.profanity[i]))
                 {
                     badLanguageUsed(ProfanityCheck.profanity[i], "question");
@@ -138,6 +80,8 @@ namespace gamificationApp
                     break;
                 } else
                 {
+                    //This checks the First Solution against the current word in the list, If there is swearing it breaks the loop
+                    //And changes Swearing to true so this can be highlighted to the user.
                     if (solution1.ToLower().Contains(ProfanityCheck.profanity[i]))
                     {
                         badLanguageUsed(ProfanityCheck.profanity[i], "first solution");
@@ -145,6 +89,8 @@ namespace gamificationApp
                         break;
                     } else
                     {
+                        //This checks the Second Solution against the current word in the list, If there is swearing it breaks the loop
+                        //And changes Swearing to true so this can be highlighted to the user.
                         if (solution2.ToLower().Contains(ProfanityCheck.profanity[i]))
                         {
                             badLanguageUsed(ProfanityCheck.profanity[i], "second solution");
@@ -154,195 +100,55 @@ namespace gamificationApp
                     }
                 }
             }
-
+            //If the program doesn't detect any swearing, it will then move to remove special characters
             if (!swearing)
             {
-                String[] cleanedInput = specialCharacterRemoval(question, solution1, solution2);
-
+                //This removes special characters from the question and solution, and then returns it as a String Array
+                String[] cleanedInput = InputCleaning.specialCharacterRemoval(question, solution1, solution2);
+                //This takes each of the values given for the Rep/Virus in solutinos and places them into an array
+                values = new int[4] { Int32.Parse(numericUpDownAns1Rep.Value.ToString()), Int32.Parse(numericUpDownAns1Virus.Value.ToString()), Int32.Parse(numericUpDownAns2Rep.Value.ToString()), Int32.Parse(numericUpDownAns2Virus.Value.ToString())};
+                sqlQueries.QuestionQueries queries = new sqlQueries.QuestionQueries();
+                //This checks if this is a new question or edited, and then submits the cleaned string and values to the relevant SQL Queries to be updated
+                //in the database.
                 if (adminChoice.Equals("new"))
-                { 
-                    insertQuestionIntoDatabase(cleanedInput);
+                {
+                    result = sqlQueries.QuestionQueries.insertQuestionIntoDatabase(cleanedInput, values);
+                    if (result.Equals("success"))
+                    {
+                        MessageBox.Show("Question was added successfully");
+                        Admin admin = new Admin();
+                        admin.Show();
+                        this.Close();
+                        this.Dispose();
+                    } else
+                    {
+                        MessageBox.Show(result);
+                    }
                 } else if (adminChoice.Equals("edit"))
                 {
-                    updateQuestionInDatabase(cleanedInput);
+                    result = sqlQueries.QuestionQueries.updateQuestionInDatabase(Int32.Parse(labelQuestionNumDisplay.Text), cleanedInput, values);
+                    if (result.Equals("success"))
+                    {
+                        MessageBox.Show("Question was updated successfully");
+                        Admin admin = new Admin();
+                        admin.Show();
+                        this.Close();
+                        this.Dispose();
+                    }
+                    else
+                    {
+                        MessageBox.Show(result);
+                    }
                 }
             }
         }
-
-        private void insertQuestionIntoDatabase(String[] cleanedInput)
-        {
-            String sql = "INSERT INTO questions(questionContent, questionAnswer1, questionAnswer2) OUTPUT INSERTED.questionID VALUES(@questionContent, @questionAnswer1, @questionAnswer2);";
-            try
-            {
-                con.Open();
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.Message);
-            }
-
-            using (var cmd = new SqlCommand(sql, con))
-            {
-                cmd.Parameters.AddWithValue("@questionContent", cleanedInput[0]);
-                cmd.Parameters.AddWithValue("@questionAnswer1", cleanedInput[1]);
-                cmd.Parameters.AddWithValue("@questionAnswer2", cleanedInput[2]);
-                try
-                {
-                    Int32 newId = (Int32)cmd.ExecuteScalar(); //Found on StackOverflow https://stackoverflow.com/questions/5228780/how-to-get-last-inserted-id
-                    con.Close();
-                    insertSolutionIntoDatabase(newId);
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                    
-                }
-            }
-        }
-
-        private void insertSolutionIntoDatabase(int questionID)
-        {
-            String sql = "INSERT INTO solutions(questionID, solution1Rep, solution1Virus, solution2Rep, Solution2Virus) VALUES(@questionID, @solution1Rep, @solution1Virus, @solution2Rep, @solution2Virus);";
-            try
-            {
-                con.Open();
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.Message);
-            }
-
-            using (var cmd = new SqlCommand(sql, con))
-            {
-                cmd.Parameters.AddWithValue("@questionID", questionID);
-                cmd.Parameters.AddWithValue("@solution1Rep", numericUpDownAns1Rep.Value);
-                cmd.Parameters.AddWithValue("@solution1Virus", numericUpDownAns1Virus.Value);
-                cmd.Parameters.AddWithValue("@solution2Rep", numericUpDownAns2Rep.Value);
-                cmd.Parameters.AddWithValue("@solution2Virus", numericUpDownAns2Virus.Value);
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                    con.Close();
-                    MessageBox.Show("Question was inserted to the database successfully");
-                    Admin admin = new Admin();
-                    admin.Show();
-                    this.Close();
-                    this.Dispose();
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-
-                }
-            }
-        }
-
-        private void updateQuestionInDatabase(String[] cleanedInput)
-        {
-            
-            int questionID = Int32.Parse(labelQuestionNumDisplay.Text);
-
-            String sql = "UPDATE questions SET questionContent = @questionContent, questionAnswer1 = @questionAnswer1, questionAnswer2 = @questionAnswer2 WHERE questionID = @questionID;";
-            try
-            {
-                con.Open();
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.Message);
-            }
-
-            using (var cmd = new SqlCommand(sql, con))
-            {
-                cmd.Parameters.AddWithValue("@questionID", questionID);
-                cmd.Parameters.AddWithValue("@questionContent", cleanedInput[0]);
-                cmd.Parameters.AddWithValue("@questionAnswer1", cleanedInput[1]);
-                cmd.Parameters.AddWithValue("@questionAnswer2", cleanedInput[2]);
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                }
-
-                try
-                {
-                    con.Close();
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                }
-            }
-
-            updateSolutionInDatabase(questionID);
-        }
-
-        private void updateSolutionInDatabase(int questionID)
-        {
-            String sql = "UPDATE solutions SET solution1Rep = @solution1Rep, solution1Virus = @solution1Virus, solution2Rep = @solution2Rep, Solution2Virus = @Solution2Virus WHERE questionID = @questionID;";
-            try
-            {
-                con.Open();
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.Message);
-            }
-
-            using (var cmd = new SqlCommand(sql, con))
-            {
-                cmd.Parameters.AddWithValue("@questionID", questionID);
-                cmd.Parameters.AddWithValue("@solution1Rep", numericUpDownAns1Rep.Value);
-                cmd.Parameters.AddWithValue("@solution1Virus", numericUpDownAns1Virus.Value);
-                cmd.Parameters.AddWithValue("@solution2Rep", numericUpDownAns2Rep.Value);
-                cmd.Parameters.AddWithValue("@solution2Virus", numericUpDownAns2Virus.Value);
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                    con.Close();
-                    MessageBox.Show("Question was updated in the database successfully");
-                    Admin admin = new Admin();
-                    admin.Show();
-                    this.Close();
-                    this.Dispose();
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-
-                }
-            }
-        }
+        //This takes the swear word used by the user and location, and highlights it
         private void badLanguageUsed(String word, String location)
         {
             MessageBox.Show("You used a swear word which was " + word + " in " + location);
         }
 
-        private void buttonAddQuestion_Click(object sender, EventArgs e)
-        {
-            adminChoice = "new";
-
-            sectionVisibility();
-        }
-
-        private void buttonEditQuestion_Click(object sender, EventArgs e)
-        {
-            
-            if(numberOfQuestions == 0)
-            {
-                MessageBox.Show("There are no questions in the Database, please enter one before editing");
-            } else
-            {
-                adminChoice = "edit";
-                comboBoxQuestions.Visible = true;
-                labelQuestionList.Visible = true;
-            }
-            
-        }
-
+        //This method unhides buttons and areas where applicable for the program to run.
         public void sectionVisibility()
         {
 
@@ -364,7 +170,8 @@ namespace gamificationApp
             numericUpDownAns2Virus.Visible = true;
 
             buttonSubmit.Visible = true;
-
+            //If there is a problem with the program detecting what kind of change is being made, it will highlight this nad ask the user to move back
+            //To the main menu and try again.
             if (!adminChoice.ToLower().Equals("edit") & !adminChoice.ToLower().Equals("new"))
             {
                 MessageBox.Show("There has been an error showing the question section. Please return to the main menu and try again.");
@@ -379,64 +186,10 @@ namespace gamificationApp
             buttonEditQuestion.Visible = false;
         }
 
-        public string[] specialCharacterRemoval(String question, String solution1, String solution2)
-        {
-            string[] cleanedArray = new string[3];
-
-            //Question Clean
-            cleanedArray[0] = stringCleaning(question);
-
-            //Solution1 Clean
-            cleanedArray[1] = stringCleaning(solution1);
-
-            //Solution2 Clean
-            cleanedArray[2] = stringCleaning(solution2);
-
-            return cleanedArray;
-        }
-
-        public string stringCleaning(String checkString)
-        {
-            String cleanedString = "";
-            char[] tempArray;
-            tempArray = new char[checkString.Length];
-            tempArray = checkString.ToCharArray();
-            char[] restrictedCharacters = { '<', '>', '/', '"', '@', '#', '|', '=', '+', '(', ')', '{', '}', '[', ']'};
-
-            for (int i = 0; i < tempArray.Length; i++)
-            {
-                int count = 0;
-                bool valid = true;
-
-                foreach (char c in restrictedCharacters)
-                {
-                    if (tempArray[i].Equals(c))
-                    {
-                        valid = false;
-                        count++;
-                    }
-                    else if (!tempArray[i].Equals(c))
-                    {
-                        if (count.Equals(restrictedCharacters.Length - 1) && valid)
-                        {
-                            cleanedString += tempArray[i];
-
-                        }
-                        else
-                        {
-                            count++;
-                        }
-
-                    }
-                }
-            }
-
-            return cleanedString;
-        }
-
+        //This method takes the current value that has been selected in the combo box and puts the relevant options from the Quiz array 
+        //into the sections for the user to edit.
         private void comboBoxQuestions_SelectedIndexChanged(object sender, EventArgs e)
         {
-            getQuestions();
             sectionVisibility();
             labelQuestionNumDisplay.Text = Quiz[(Int32.Parse(comboBoxQuestions.SelectedItem.ToString())-1),0];
             textBoxQuestion.Text = Quiz[(Int32.Parse(comboBoxQuestions.SelectedItem.ToString()) - 1), 1];
@@ -448,62 +201,70 @@ namespace gamificationApp
             numericUpDownAns2Virus.Value = Int32.Parse(Quiz[(Int32.Parse(comboBoxQuestions.SelectedItem.ToString()) - 1), 7]);
         }
 
+        //This returns the user to the Main Menu.
+        private void buttonMenu_Click(object sender, EventArgs e)
+        {
+            MainMenu menu = new MainMenu();
+            menu.Show();
+            this.Hide();
+            this.Dispose();
+        }
+
+        //This takes the text input from the user and begins to run through the checks.
+        private void buttonSubmit_Click(object sender, EventArgs e)
+        {
+            string question = textBoxQuestion.Text;
+            string solution1 = textBoxAnswer1.Text;
+            string solution2 = textBoxAnswer2.Text;
+
+            textEntryCheck(question, solution1, solution2);
+        }
+
+        //This method takes the question number and deletes the question from the database after the user confirms.
         private void buttonDelete_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure you want to delete this question", "Delete Question", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
-            if(result == DialogResult.Yes)
+            if (result == DialogResult.Yes)
             {
-                deleteQuestion();
+                int questionID = Int32.Parse(labelQuestionNumDisplay.Text);
+                String result1 = sqlQueries.QuestionQueries.deleteQuestion(questionID);
+                if (result1.Equals("success"))
+                {
+                    MessageBox.Show("Question was deleted from the Database");
+                    Admin admin = new Admin();
+                    admin.Show();
+                    this.Close();
+                    this.Dispose();
+                } else
+                {
+                    MessageBox.Show("Error: " + result1);
+                }
             }
         }
 
-        private void deleteQuestion()
+        //This button shows the sections valid for adding a new question to the database
+        private void buttonAddQuestion_Click(object sender, EventArgs e)
         {
-            int questionID = Int32.Parse(labelQuestionNumDisplay.Text);
+            adminChoice = "new";
 
-            String questionDelete = "DELETE FROM questions WHERE questionID = @questionID;";
-            String solutionDelete = "DELETE FROM solutions WHERE questionID = @questionID;";
-            try
-            {
-                con.Open();
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.Message);
-            }
+            sectionVisibility();
+        }
 
-            using (var cmd = new SqlCommand(solutionDelete, con))
+        //This button show the sections valid for editing a question in the database.
+        private void buttonEditQuestion_Click(object sender, EventArgs e)
+        {
+            //This checks to make sure there are questions in the database, if there are none, it will highlight this to the user.
+            if (numberOfQuestions == 0)
             {
-                cmd.Parameters.AddWithValue("@questionID", questionID);
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                }
+                MessageBox.Show("There are no questions in the Database, please enter one before editing");
+            }
+            else
+            {
+                adminChoice = "edit";
+                comboBoxQuestions.Visible = true;
+                labelQuestionList.Visible = true;
             }
 
-            using (var cmd = new SqlCommand(questionDelete, con))
-            {
-                cmd.Parameters.AddWithValue("@questionID", questionID);
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                }
-            }
-            con.Close();
-            
-            MessageBox.Show("Question was deleted from the Database");
-            Admin admin = new Admin();
-            admin.Show();
-            this.Close();
-            this.Dispose();
         }
     }
 }

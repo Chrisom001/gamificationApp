@@ -1,0 +1,16 @@
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Release\gamification.mdf
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Release\gamification_log.ldf
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Release\gamificationApp.exe.config
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Release\gamificationApp.exe
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\bin\Release\gamificationApp.pdb
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.csprojAssemblyReference.cache
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.Admin.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.Form1.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.GameScreen.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.MainMenu.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.Properties.Resources.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.Scoreboard.resources
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.csproj.GenerateResource.cache
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.csproj.CoreCompileInputs.cache
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.exe
+C:\Users\Chris\Source\Repos\Abertay-CMP307\cmp307-coursework-Chrisom001\gamificationApp\gamificationApp\obj\Release\gamificationApp.pdb
